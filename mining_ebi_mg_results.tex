@@ -1,0 +1,326 @@
+%
+% Metagenomics R-Analysis Handout with title page and a section demonstrating
+% the different environments defined in the top matter
+%
+\documentclass[a4paper,12pt,twoside]{memoir}
+\usepackage{btp}    % Use the trainermanual package option (i.e. \usepackage[trainermanual]{btp}) to generate the Trainer's version of the manual
+
+% Set some Workshop specific info
+\setWorkshopTitle{Mining EBI Metagenomics R-Analysis}
+\setWorkshopVenue{Canberra, ACTU}
+\setWorkshopDate{July 2014}
+\setWorkshopAuthor{Hubert Denis, European Bioinformatics Institute\\
+Bioplatforms Australia\\
+CSIRO, Australia}
+
+
+\begin{document}
+
+%
+% Workshop Title Page
+%
+\workshoptitlepage
+
+\section{General information}
+
+The following standard icons are used in the hands-on exercises to help you locating:
+
+\begin{information}
+Information information.
+
+\end{information}
+
+\begin{steps}
+Instructions to perform.
+
+\end{steps}
+
+\begin{note}
+General information/notes.
+
+\end{note}
+
+\begin{warning}
+Warning - PLEASE take care and read carefully.
+
+\end{warning}
+
+\begin{questions}
+Questions.
+
+\end{questions}
+
+\begin{bonus}
+An optional bonus section for those progressing rapidly.
+\end{bonus}
+
+\begin{advanced}
+An optional advanced section for those progressing very rapidly or to be used for future reference.
+\end{advanced}
+
+\clearpage
+
+\section{Resources used}
+
+\subsection{Tools Used}
+
+\begin{description}[style=multiline,labelindent=0cm,align=left,leftmargin=0.5cm]
+  \item[EBI Metagenomics Portal]\hfill\\
+     \url{https://www.ebi.ac.uk/metagenomics}
+  \item[rRNASelector]\hfill\\
+     \url{http://www.ncbi.nlm.nih.gov/pubmed/21887657}
+  \item[RDP database]\hfill\\
+     \url{http://rdp.cme.msu.edu/taxomatic/main.spr}
+  \item[RStudio interface]\hfill\\
+     \url{https://www.rstudio.com/}
+  \item[HeatMap\_in\_R]\hfill\\
+     \url{http://sebastianraschka.com/Articles/heatmaps\_in\_r.htm}
+\end{description}
+
+\subsection{Sources of Data}
+\begin{description}[style=multiline,labelindent=0cm,align=left,leftmargin=0.5cm]
+    \item[HOT station, Central North Pacific Gyre, ALOHA]\hfill\\ 
+      \url{https://www.ebi.ac.uk/metagenomics/project/SRP000110}
+\end{description}
+
+\section{Tutorial objectives}
+
+\begin{information}
+This tutorial provides an introduction to understand EBI Metagenomics (EMG) resource results files and a guide for mining them. You will learn about the format of the EMG results files and how to mine them using R
+After completing this course, you should:
+ Understand the format of the EMG result files
+ Be able to extract information from the result files available on the EMG website using open source tools (The R statistical environment)
+\end{information}
+
+\clearpage
+
+\section{An introduction to the EMG result files}
+
+\begin{information}
+The EBI Metagenomics resource (EMG) generates taxonomy and functional analysis of metagenomic data sets. In addition of displaying the results on the EMG website, the results are available to download in order for the user to mine these according to their needs.
+What are the downloadable results files of the EMG resource?
+In addition to raw and filtered data, EMG provides 3 types of downloadable result files.
+\end{information}
+
+\begin{description}[style=multiline,labelindent=0cm,align=left,leftmargin=0.5cm]
+  \item[The first category is constituted of 5 different sequence files in FASTA format:]
+  \item[-   Processed reads with predicted CDS]
+  \item[-   Processed reads with InterPro matches]
+  \item[-   Processed reads without InterPro match]
+  \item[-   Predicted CDS]
+  \item[-   Predicted CDS with InterPro matches]
+  \item[The second group comprise results of the functional annotation of the sequences in tab-separated (TSV) and comma-separated (CSV) format:]
+  \item[-   InterPro matches (TSV)]
+  \item[-   Complete GO annotation (CSV)]
+  \item[-   GO slim annotation (CSV)]
+  \item[The last set corresponds to the taxonomic analysis output in] 
+  \item[-   Reads encoding 5S rRNA (FASTA)]
+  \item[-   Reads encoding 16S rRNA (FASTA)]
+  \item[-   Reads encoding 23S rRNA (FASTA)]
+  \item[-   OTUs and taxonomic assignments (BIOM)]
+  \item[-   Phylogenetic tree (Newick format)]
+  \item[-   OTUs and taxonomic assignments (TSV)]
+\end{description}
+
+\begin{information}
+The BIOM format is used to represent the number of 'Operational taxonomic unit' (OTU) observed in the sample. However this formart is not easily human-readable so these data are also available as a tab-separated file (OTUs and taxonomic assignments.tsv). 
+\end{information}
+
+\clearpage
+
+\begin{information}
+The Newick format is a computer-readable form to describe phylogenetic trees and is recognized by most viewers such as TreeView (\url{http://taxonomy.zoology.gla.ac.uk/rod/treeview.html}), FigTree (\url{http://tree.bio.ed.ac.uk/software/figtree/}) and iTOL (interactive Tree Of Life, \url{http://itol.embl.de/}) for example.
+\end{information}
+
+\subsection{Downloading result files from the EMG website}
+
+\begin{information}
+All results files are available via the Download tab on the EMG website (\url{www.ebi.ac.uk/metagenomics/}) 
+The purpose of this exercise is to illustrate how users can mine EMG result output files.
+We will produce a HeatMap graph to compare taxonomy annotations from 4 metagenomic datasets obtained by sequencing genomic DNA obtained from filtered Pacific Ocean samples collected at different depths.
+
+The EMG pipeline performs taxonomy annotation from 16S rRNA-containing sequences identified using rRNASelector (\url{http://www.ncbi.nlm.nih.gov/pubmed/21887657}). Using Qiime, the 16S sequences are clustered by similarity (97\%) and a representative sequence of each cluster, called Operational Taxonomy Unit (OTU), is annotated up to the kingdom, phylum, class, order or family level depending on the models present in the RDP database (\url{http://rdp.cme.msu.edu/taxomatic/main.spr}). These are these OTUs annotations that we will investigate in this practical.
+\end{information}
+
+\section{I- Accessing the taxonomy annotation output file}
+
+\begin{information}
+The result of Qiime annotation performed by the EMG pipeline can be accessed on the EMG pipeline website.
+\end{information}
+
+\begin{steps}
+Open the Metagenomics Portal homepage in a web browser.
+From the Project page (click the 'Project' tab), find the project 'HOT station, Central North Pacific Gyre, ALOHA' and click on the project name.
+You should now have a Project Overview page open describing the project, related publications, and links to the 4 sample that this project contains.
+\end{steps}
+
+\begin{steps}
+Click on the sample 'HOT Station ALOHA, 25m'. You should now been on the Sample Overview page. Click on the 'download' tab and then select the 'OTUs and taxonomic assignments (TSV)' link in the 'Taxonomic Analysis' group. In the menu window, select open it. You should be able to see that this is a tab-separated file with column 1 containing an OTU number and the name of the representative sequence, column 2 containing the predicted annotation and column 3 containing the e-value for this prediction.
+\end{steps}
+
+\begin{note}
+Note that several OTUs have the same taxonomy annotations (for example line 3 and 8 for example).
+\end{note}
+
+\begin{questions}
+Question 1: How could you explain that different OTUs could have the same taxonomy prediction ?
+
+
+\end{questions}
+
+\section{II- Investigation of the taxonomy annotations from the 'HOT Station ALOHA, 25m' sample set}
+
+\begin{information}
+To investigate the taxonomy annotations further, we will use the statistical environment R. We will use the graphical console RStudio to perform our analysis. There is no need of prior knowledge in R as all steps are decomposed step by step below as indicated by the step pictogram 
+Type or paste the code lines in Rstudio as shown in figure 4. You can investigate further any function using the help tab as indicated in figure 4?
+\end{information}
+
+\begin{questions}
+Together, we will answer this question: How could you obtain the unique OTUs and their occurrence in the taxonomy annotation ?
+
+
+\end{questions}
+
+\begin{steps}
+Open the R environment by starting Rstudio (Applications/Other/RStudio). 
+\end{steps}
+
+\begin{note}
+A screen similar to the following will start
+ADD A Figure 4  PNG
+\end{note}
+
+\begin{steps}
+First we have to change the work space to the folder containing the datafiles (HubertTutorial/Assembly). Type the following line in the console pane:
+\begin{lstlisting}
+ setwd("~/Desktop/HubertTutorial/Output_mining")
+\end{lstlisting}
+Load the tab-separated value HOT\_Station\_ALOHA,\_25m\_depth\_otu output file. 
+\begin{lstlisting}
+ Data25 <- read.delim("HOT_Station_ALOHA_25m_depth_otu.tsv", header=FALSE)
+\end{lstlisting}
+To only extract the taxonomy information from this file, we only need data from the second column. This can be achieved simply in R:
+\begin{lstlisting}
+ Taxo25 = Data25[2]
+\end{lstlisting}
+The number of OTU annotations present in Taxo25 can be obtained by using the function 'dim':
+\begin{lstlisting}
+ dim(Taxo25)
+ 168 1
+\end{lstlisting}
+As we saw earlier, more than one OTU could have the same annotation therefore some taxonomy annotations will be present multiple times in Taxo25. To obtain the unique annotations and their occurrence, R provides the function table which will compute a list of unique data and their occurrences:
+\begin{lstlisting}
+ UniqTaxo25 = table(Taxo25)
+\end{lstlisting}
+Visualize the table by typing in your console:
+\begin{lstlisting}
+ print(UniqTaxo25)
+\end{lstlisting}
+\end{steps}
+
+\begin{steps}
+In order to transform this list in a table containing the unique OTUs and their occurrence, we will change the list as a table format called data frame in R.
+Put simply, a data frame is a table, in which each column contains measurements on one variable, and each row contains one case.
+  We can re-cycle the variable UniqTaxo25 :
+\begin{lstlisting}
+ UniqTaxo25 = as.data.frame(UniqTaxo25)
+\end{lstlisting}
+The number of unique OTU annotations present in Taxo25 can be obtained by using the function 'dim':
+\begin{lstlisting}
+ dim(UniqTaxo25)
+    36 2
+\end{lstlisting}
+You can also visualise the data frame by typing in your console:
+\begin{lstlisting} 
+ print(UniqTaxo25)
+\end{lstlisting}
+\end{steps}
+
+\begin{note}
+This indicates that among the 168 OTU annotations, there is 36 unique annotations. 
+\end{note}
+
+\section{III- Obtaining the taxonomy annotations from the 'HOT Station ALOHA, 500m' sample set}
+
+\begin{information}
+Using the same step than described above, extract the taxonomy information for the sample 'HOT Station ALOHA 500m' creating the variables Data500, Taxo500 ad UniqTaxo500.
+You should obtain that among the 192 OTU annotations for the 500 depth file, there is 49 unique annotations. 
+\end{information}
+
+\section{IV- Generating a CSV file containing occurences annotations from both files}
+
+\begin{note}
+In order to compare these two annotation sets, we first need to merge them in order to obtain a table containing the unique OTUs and occurrence in both sets.
+\end{note}
+
+\begin{steps}
+ Again, R provides a very handy function for this:
+\begin{lstlisting} 
+ TaxoComp =  merge (UniqTaxo25, UniqTaxo500, by.x = "Taxo25", by.y= "Taxo500", all = TRUE)
+\end{lstlisting}  
+we can rename the columns for clarity:
+\begin{lstlisting}
+  colnames(TaxoComp)=c("OTU", "HOT\_25", "HOT\_500")
+\end{lstlisting}
+\end{steps}
+
+\begin{information}
+If you visualise TaxoComp data frame, you should obtain:
+INSERT picture
+\end{information}
+
+\begin{steps}
+ Before drawing the heatmap, we need to replace the 'NA' by the value "0"
+\begin{lstlisting}
+ TaxoComp[is.na(TaxoComp)] = 0
+\end{lstlisting}
+ Save this file as CSV (comma-separated) file:
+\begin{lstlisting}
+ write.csv(TaxoComp, file = "Comp25_500.csv", row.names = FALSE)
+\end{lstlisting}
+\end{steps}
+
+\section{V- Generating a heatmap from taxonomy files for the 4 depth files}
+
+\begin{information}
+In interest of time, precomputed CSV files have been generated containing the taxonomy occurences for the 4 depth files.
+In addition, to increase heatmap clarity, the files at the class level of taxonomy have been collapsed. The resulting file has been saved as Taxo25\_c.csv in folder HubertTutorial/Output\_mining.
+\end{information}
+
+\begin{warning}
+To collapse the UniqTaxo25 dataset at a chosen level, a python script is provided (Choose\_level\_RDP\_count.py) which calculates the occurrence of the OTU after collapsing them at the chosen level. 
+The script can be found in HubertTutorial/Output\_mining.
+
+\textbf{DO NOT RUN THIS SCRIPT AS IT HAS ALREADY BEEN DONE FOR YOU}
+
+If you have a local installation of python, it can be run by typing:
+\begin{lstlisting}
+ python Choose_level_RDP_count.py UniqTaxo25 "level" where level can be k (kindom), p (phylum), c (class), o (order) or f (family). 
+\end{lstlisting}
+Taxo25\_"level" was saved as text file:
+\begin{lstlisting}
+ write.table(UniqTaxo25_"level", file = "filename", row.names = FALSE,col.names = FALSE)
+\end{lstlisting}
+\end{warning}
+
+\begin{steps}
+To generate the heatmap, we will use a pre-written R script. To do so, go to File, OpenFile, navigate to the folder HubertTutorial/Output\_mining and choose HeatMap\_in\_R.
+
+Check that the 22nd line points to the correct UniqTaxo25\_c.csv file. If you wish, you can modify the name of the heatmap image file at line 40.
+Then run the script by clicking on "Source" on the top right hand corner of the scripting window.
+
+The heatmap will be saved into the HubertTutorial/Output\_mining folder under the name indicated in line 40.
+\end{steps}
+
+\begin{note}
+Comments: the HeatMap\_in\_R script is fully annotated and yours to re-use. Additional information about it can be read at \url{http://sebastianraschka.com/Articles/heatmaps\_in\_r.html} . The same approach could be used to generate an heatmap representation of the IPR or GO terms annotations.
+\end{note}
+
+\begin{questions}
+Question 2: What can you observe by looking at the heatmap ? Comment on the (1) colour distribution (2) appearance/disappearance of OTUs and discuss the biological significance of your observations.
+\begin{answer}
+
+\end{answer}
+\end{questions}
+
+\end{document}
