@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/BioplatformsAustralia/metagenomics-handout.png?branch=master)](https://travis-ci.org/BioplatformsAustralia/metagenomics-handout)
+[![Build Status](https://travis-ci.org/BPA-CSIRO-Workshops/metagenomics-handout.png?branch=master)](https://travis-ci.org/BPA-CSIRO-Workshops/metagenomics-handout)
 
 Purpose
 =======
